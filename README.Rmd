@@ -1,0 +1,11 @@
+---
+title: "README"
+author: "Philip Parker"
+date: "23 February 2015"
+output: html_document
+---
+
+Project Format
+------------------
+1. Cohort by cohort means - Listwise deletion
+2. Convert to survey package with attrition weights and MI for data holes
