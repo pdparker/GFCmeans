@@ -5,7 +5,8 @@ date: "23 February 2015"
 output: html_document
 ---
 
-Project Format
+Contents
 ------------------
-1. Cohort by cohort means - Listwise deletion
-2. Convert to survey package with attrition weights and MI for data holes
+1. Mean and frequency generation files for all cohorts
+2. A edit rules file which outlines global transformation and data checking
+3. A makefile to make csv files for later analysis and ploting
