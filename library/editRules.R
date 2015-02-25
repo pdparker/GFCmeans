@@ -22,7 +22,13 @@ recodeFun <- function(z) {
 	}
 
 frequencyFun <- function(z) {
-	temp <- rbind(apply(z, 2, function(x) table(x) ) )
+	temp <- rbind(apply(z, 2, function(x){
+						t <- as.factor(x)
+						levels(t) <- list(VUH = 1,UH = 2,H = 3,VH = 4)
+						table(t)
+						}
+					)
+				)
 	t(temp)
 	}
 

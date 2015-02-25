@@ -1,0 +1,6 @@
+[1] "2015-02-25 17:29:32 AEDT"
+case 13 descrepency between mean and SurveyM:   descrepency was -0.08364882 
+[1] "2015-02-25 17:31:49 AEDT"
+case 13 descrepency between mean and SurveyM:   descrepency was -0.08364882 
+[1] "2015-02-25 17:32:06 AEDT"
+case 13 descrepency between mean and SurveyM:   descrepency was -0.08364882 
