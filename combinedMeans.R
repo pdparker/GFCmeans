@@ -51,3 +51,16 @@ sMeans$age <- c(15:24,rep(16:25,2), 16:22 )
 sMeans$year <- c(1996:2005,2000:2009,2004:2013,2007:2013)
 sMeans$cohort <- c(rep("y95",10),rep("y98",10),rep("y03",10),rep("y06",7))
 write.csv(sMeans, "allMeans.csv")
+
+library(googleVis)
+library(car)
+vis <- sMeans[, c(grep("\\.means$", names(sMeans) ), 49:52) ]
+names(vis) <- gsub("\\.means$", "", names(vis))
+#vis$col <- recode(vis$cohort, "'y95' = 'red'; 'y98' = 'blue'; 'y03' = 'green'; 'y06' = 'black'")
+vis$GFC08 <- ifelse(vis$year < 2008, "pre", "post")
+vis$GFC09 <- ifelse(vis$year < 2009, "pre", "post")
+vis$GFC10 <- ifelse(vis$year < 2010, "pre", "post")
+#op <- options(gvis.plot.tag='chart')
+M <- gvisMotionChart(vis, 'cohort', 'year', colorvar='GFC09',  xvar = 'age', yvar = 'general',
+					 options=list(width=600, height=400))
+capture.output(print(M, 'chart'), file = "GFCweb/GFCchart.html" )

@@ -6,6 +6,7 @@ all: f1995.csv f1998.csv f2003.csv f2006.csv \
 	m1995.csv m1998.csv m2003.csv m2006.csv \
 	s1995.csv s1995.csv s1995.csv s1995.csv \
 	allMeans.csv
+	Cohort95Data.RData Cohort98Data.RData Cohort03Data.RData Cohort06Data.RData\
 
 s1995.csv m1995.csv f1995.csv: listWise1995.R
 	/usr/bin/Rscript listWise1995.R
