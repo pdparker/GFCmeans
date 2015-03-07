@@ -103,9 +103,3 @@ S2006 <- cbind(trendMeans$coefficients, confint(trendMeans))
 colnames(S2006)[1] <- "means"
 write.csv(S2006, file = "s2006.csv")
 
-mineModel <- MIcombine(with(dclust, svyglm(general~trend + I(trend>3)*mining + INDIG + EGP)))
-summary(mineModel)
-
-sesModel <- MIcombine(with(dclust, svyglm(social~trend + I(trend>3)*EGP)))
-summary(sesModel)
-

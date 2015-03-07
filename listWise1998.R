@@ -31,6 +31,8 @@ db <- dbConnect(SQLite(), dbname="~/Dropbox/Databases/SQLdb/LSAY2015_update.db")
 				   ",SCHOOLNO, STATE, SEX, INDIG, ANU3DAD, ANU3MUM FROM LSAY1998")
 	d1998 <- dbGetQuery(db, query)
 	d1998$id <- paste0("C98.",row.names(d1998))
+	# Add mining state
+	d2006$mining <- recode(d2006$STATE, "c(4,6,8)=1; c(1,2,3,5,7)=0")
 	#Get highest occupational code
 	d1998$HISEI <- apply(d1998[,c("ANU3DAD", "ANU3MUM")],1, max, na.rm = TRUE) %>% 
 		recode("-Inf = NA") 
@@ -38,7 +40,8 @@ db <- dbConnect(SQLite(), dbname="~/Dropbox/Databases/SQLdb/LSAY2015_update.db")
 	source("./library/translationFun.R")
 	translator <- dbGetQuery(db, "SELECT ISEI, EGP FROM SESconversion")
 	d1998$EGP <- sesConvert(d1998$HISEI, fromFormat = "ANU3", toFormat = "EGP", FUN = Mode)
-	d1998$EGP <- recode(d1998$EGP, "c(1,2)='upper'; c(3,4,5,6,7,8)='middle'; c(9,10,11)='working'")
+	d1998$EGP <- recode(d1998$EGP, "c(1,2)='upper'; c(3,4,5,6,7,8)='middle'; c(9,10,11)='working'") %>% factor %>%
+		relevel( 'upper')
 	d1998 <- d1998[,-c(135,136)]
 #-------------------------------------------------
 

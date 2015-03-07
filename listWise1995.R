@@ -42,7 +42,8 @@ db <- dbConnect(SQLite(), dbname="~/Dropbox/Databases/SQLdb/LSAY2015_update.db")
 	d1995$HISEI <- apply(d1995[,c("ISEI_MUM", "ISEI_F")],1, max, na.rm = TRUE) %>% 
 		recode("-Inf = NA") 
 	d1995$EGP <- sapply(d1995$HISEI, function(x) translator[match(x, translator$ISEI), "EGP"] )
-	d1995$EGP <- recode(d1995$EGP, "c(1,2)='upper'; c(3,4,5,6,7,8)='middle'; c(9,10,11)='working'")
+	d1995$EGP <- recode(d1995$EGP, "c(1,2)='upper'; c(3,4,5,6,7,8)='middle'; c(9,10,11)='working'") %>% factor %>%
+		relevel( 'upper')
 	d1995 <- d1995[,-c(135,136)]
 	#-------------------------------------------------
 
@@ -109,3 +110,4 @@ source("./library/editRules.R")
 	S1995 <- cbind(trendMeans$coefficients, confint(trendMeans))
 	colnames(S1995)[1] <- "means"
 	write.csv(S1995, file = "s1995.csv")
+	
