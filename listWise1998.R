@@ -32,7 +32,7 @@ db <- dbConnect(SQLite(), dbname="~/Dropbox/Databases/SQLdb/LSAY2015_update.db")
 	d1998 <- dbGetQuery(db, query)
 	d1998$id <- paste0("C98.",row.names(d1998))
 	# Add mining state
-	d2006$mining <- recode(d2006$STATE, "c(4,6,8)=1; c(1,2,3,5,7)=0")
+	d1998$mining <- recode(d1998$state, "c(4,6,8)=1; c(1,2,3,5,7)=0")
 	#Get highest occupational code
 	d1998$HISEI <- apply(d1998[,c("ANU3DAD", "ANU3MUM")],1, max, na.rm = TRUE) %>% 
 		recode("-Inf = NA") 
@@ -67,27 +67,27 @@ d1998 <- d1998[,c(order(names(d1998)[1:120]), 121:N)]
 names(d1998) <- gsub("(|\\.)[0-9]+", "", names(d1998))
 # Rename weight variables
 # Stack data
-dLong <- rbind.data.frame(d1998[,c(1,11,21,31,41,51,61,71,81,91,101,111,121,131:N)], 
-						  d1998[,c(2,12,22,32,42,52,62,72,82,92,102,112,122,131:N)],
-						  d1998[,c(3,12,23,33,43,53,63,73,83,93,103,113,123,131:N)], 
-						  d1998[,c(4,14,24,34,44,54,64,74,84,94,104,114,124,131:N)],
-						  d1998[,c(5,15,25,35,45,55,65,75,85,95,105,115,125,131:N)],
-						  d1998[,c(6,16,26,36,46,56,66,76,86,96,106,116,126,131:N)],
-						  d1998[,c(7,17,27,37,47,57,67,77,87,97,107,117,127,131:N)],
-						  d1998[,c(8,18,28,38,48,58,68,78,88,98,108,118,128,131:N)],
-						  d1998[,c(9,19,29,39,49,59,69,79,89,99,109,119,129,131:N)],
-						  d1998[,c(10,20,30,40,50,60,70,80,90,100,110,120,130,131:N)])
-dLong$trend <- rep(1:10, each=(nrow(d1998)))
+dLong98 <- rbind.data.frame(d1998[,c(1,11,21,31,41,51,61,71,81,91,101,111,121,131:N)], 
+							d1998[,c(2,12,22,32,42,52,62,72,82,92,102,112,122,131:N)],
+							d1998[,c(3,12,23,33,43,53,63,73,83,93,103,113,123,131:N)], 
+							d1998[,c(4,14,24,34,44,54,64,74,84,94,104,114,124,131:N)],
+							d1998[,c(5,15,25,35,45,55,65,75,85,95,105,115,125,131:N)],
+							d1998[,c(6,16,26,36,46,56,66,76,86,96,106,116,126,131:N)],
+							d1998[,c(7,17,27,37,47,57,67,77,87,97,107,117,127,131:N)],
+							d1998[,c(8,18,28,38,48,58,68,78,88,98,108,118,128,131:N)],
+							d1998[,c(9,19,29,39,49,59,69,79,89,99,109,119,129,131:N)],
+							d1998[,c(10,20,30,40,50,60,70,80,90,100,110,120,130,131:N)])
+dLong98$trend <- rep(1:10, each=(nrow(d1998)))
 # List wise delete by attrition
-dLong <- dLong[!is.na(dLong$WT),]
+dLong98 <- dLong98[!is.na(dLong98$WT),]
 # Check number of complete cases
-sum(complete.cases(dLong))
+sum(complete.cases(dLong98))
 #save to Rdata
 save(dLong98, file = "Cohort98Data.RData")
 #Multiple Imputations of data holes
-MI <- amelia(dLong,m = 5, p2s = 1, idvars = c('WT', 'id', 'schoolno'), noms = c("EGP") )
+MI <- amelia(dLong98,m = 5, p2s = 1, idvars = c('WT', 'id', 'schoolno'), noms = c("EGP") )
 a <- imputationList(MI$imputations)
-rm(list=c("dLong", "d1998", "lsTags", "weightTags", "F1998", "m1998"))
+rm(list=c("dLong98", "d1998", "lsTags", "weightTags", "F1998", "m1998"))
 # Wrap in srvey package
 dclust <- svydesign(ids = ~id+schoolno, weights = ~WT, data = a, nest=TRUE)
 rm(a)

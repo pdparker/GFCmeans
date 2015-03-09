@@ -1,4 +1,4 @@
-### Data Prep 2006 ###
+									### Data Prep 2006 ###
 
 ## Package Load
 library(RSQLite)
@@ -29,7 +29,7 @@ db <- dbConnect(SQLite(), dbname="~/Dropbox/Databases/SQLdb/LSAY2015_update.db")
 	# Extraction of major data
 	query <- paste("SELECT ", paste(lsTags$Variable, collapse=","),",", 
 				   paste(weightTags$Variable, collapse=","),
-				   "SCHOOLID, STATE,ST04Q01 as SEX, INDIG, HISEI FROM LSAY2006")
+				   ",SCHOOLID, STATE,ST04Q01 as SEX, INDIG, HISEI FROM LSAY2006")
 	d2006 <- dbGetQuery(db, query)
 	d2006$id <- paste0("C06.",row.names(d2006))
 	# Add mining state
@@ -63,13 +63,13 @@ d2006 <- d2006[,c(order(names(d2006)[1:84]), 85:N)]
 names(d2006) <- gsub("(|\\.)[0-9]+", "", names(d2006))
 # Rename weight variables
 # Stack data
-dLong06 <- rbind.data.frame(d2006[,c( 1,8,15,22,29,36,43,50,57,64,71,78,85:N)], 
-						  d2006[,c( 2,9,16,23,30,37,44,51,58,65,72,79,85:N)],
-						  d2006[,c(3,10,17,24,31,38,45,52,59,66,73,80,85:N)], 
-						  d2006[,c(4,11,18,25,32,39,46,53,60,67,74,81,85:N)],
-						  d2006[,c(5,12,19,26,33,40,47,54,61,68,75,82,85:N)],
-						  d2006[,c(6,13,20,27,34,41,48,55,62,69,76,83,85:N)],
-						  d2006[,c(7,14,21,28,35,42,49,56,63,70,77,84,85:N)])
+dLong06 <- rbind.data.frame(d2006[,c( 1,8,15,22,29,36,43,50,57,64,71,78,85,92:N)], 
+							d2006[,c( 2,9,16,23,30,37,44,51,58,65,72,79,86,92:N)],
+							d2006[,c(3,10,17,24,31,38,45,52,59,66,73,80,87,92:N)], 
+							d2006[,c(4,11,18,25,32,39,46,53,60,67,74,81,88,92:N)],
+							d2006[,c(5,12,19,26,33,40,47,54,61,68,75,82,89,92:N)],
+							d2006[,c(6,13,20,27,34,41,48,55,62,69,76,83,90,92:N)],
+							d2006[,c(7,14,21,28,35,42,49,56,63,70,77,84,91,92:N)])
 
 dLong06$trend <- rep(1:7, each=(nrow(d2006)))
 # List wise delete by attrition
