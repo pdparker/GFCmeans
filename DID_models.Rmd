@@ -1,0 +1,130 @@
+---
+title: "Effect of the GFC: Basic DID Approach"
+author: "Philip Parker"
+date: "10 March 2015"
+output: html_document
+---
+
+Longitudinal analysis
+---------------------
+Data is in a complex survey format with clustered standard errors by school and id (data is in longitudinal format). Population plus attrition weights are used across the board. Ids for individuals and schools have been updated to be unique across cohorts. Missing data holes have been imputed using Amelia (bootstrapped EM with five imputations drawn). 
+
+```{r loadLong, echo=FALSE,warning=FALSE, message=FALSE}
+load("combinedData.RData")
+library(knitr)
+library(survey)
+library(mitools)
+```
+
+DID age 19: No trend
+------------------------
+
+```{r comp1_notrend, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+domains <- c("general", "work","living","money",
+			 "people", "social", "home",
+			 "career", "future","independence",
+			 "lesiure","location")
+
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~ 
+								relevel(factor(cohort), ref='y06')*post06" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend < 5) 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	paper[[i]] <- cbind(out[6,c(1,3:4)],out[7,c(1,3:4)],out[8,c(1,3:4)])
+} 
+
+cat("<h3>", "DID Estimates", "</h3>\n")
+print(kable(do.call(rbind.data.frame, paper), digits = 3,format = "markdown",padding=2) )
+
+#with(dclust, svytable(~indig+cohort))
+```
+
+DID age 22: No trend
+------------------------
+```{r com2_noTrend, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~
+								relevel(factor(cohort), ref='y03')*post03" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend > 3 & trend < 8) 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[6,c(1,3:4)],out[7,c(1,3:4)],out[8,c(1,3:4)])
+} 
+
+cat("<h3>", "DID Estimates", "</h3>\n")
+print(kable(do.call(rbind.data.frame, paper), digits = 3,format = "markdown",padding=2) )
+```
+
+
+DID age 19: With trend
+------------------------
+
+```{r comp1, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+domains <- c("general", "work","living","money",
+			 "people", "social", "home",
+			 "career", "future","independence",
+			 "lesiure","location")
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~ 
+								relevel(factor(cohort), ref='y06') +
+								post06 + trend + 
+								relevel(factor(cohort), ref='y06'):post06 +
+								relevel(factor(cohort), ref='y06'):trend" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend < 5) 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[7,c(1,3:4)],out[8,c(1,3:4)],out[9,c(1,3:4)])
+} 
+
+cat("<h3>", "DID Estimates", "</h3>\n")
+print(kable(do.call(rbind.data.frame, paper), digits = 3,format = "markdown",padding=2) )
+
+#with(dclust, svytable(~trend+treat+cohort))
+```
+
+DID age 22: With trend
+------------------------
+```{r com2, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~
+								relevel(factor(cohort), ref='y03') + 
+								post03 + trend + 
+								relevel(factor(cohort), ref='y03'):post03 +
+								relevel(factor(cohort), ref='y03'):trend" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend > 3 & trend < 8) 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[7,c(1,3:4)],out[8,c(1,3:4)],out[9,c(1,3:4)])
+} 
+
+cat("<h3>", "DID Estimates", "</h3>\n")
+print(kable(do.call(rbind.data.frame, paper), digits = 3,format = "markdown",padding=2) ) 
+```
+
+
