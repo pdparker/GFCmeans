@@ -1,133 +1,95 @@
 ---
 title: "Effect of the GFC: Basic DID Approach"
-author: "Philip Parker"
+author: "Blinded For Review"
 date: "10 March 2015"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    theme: journal
+    number_sections: true
+  md_document:
+    toc: true 
 ---
 
 PSM age 19: Pre-matching
 ------------------------
 
-```{r pre19, echo=FALSE,warning=FALSE, message=FALSE}
-library(mitools)
-library(survey)
-library(MatchIt)
-library(snowfall)
-#Load data
-load(file="psm98.03.RData")
-source("lib/matchItAddOn.R")
-#Unmatched
-	summary(MIcombine(with(d98.03, svyglm(scale(general6) ~ treatment + scale(general5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(work6) ~ treatment + scale(work5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(living6) ~ treatment + scale(living5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(money6) ~ treatment + scale(money5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(people6) ~ treatment + scale(people5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(social6) ~ treatment + scale(social5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(home6) ~ treatment + scale(home5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(career6) ~ treatment + scale(career5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(future6) ~ treatment + scale(future5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(independence6) ~ treatment + scale(independence5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(lesiure6) ~ treatment + scale(lesiure5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(location6) ~ treatment + scale(location5)) ) ))
-```
-
-PSM Age 19: Matching
-------------------------
-```{r psm19, echo=FALSE,warning=FALSE, message=FALSE}
-#Propensity score matching
-	psmformula <- paste("treatment~",
-		paste0(names(MIimp$imputations[[1]])[c(1:72, 94:95,98,100)],
-			   collapse = "+") )
-	data <- MIimp$imputations
-	#Set up parallel settings
-	sfInit(parallel=TRUE, cpus=5)
-	sfLibrary(MatchIt)
-	#export any object you want each of the clusters to have access to
-	sfExport("data"); sfExport("psmformula")
-	#Run multilevel models
-	match1 <- sfLapply(data, function(x){
-		set.seed(100)
-		matchit(as.formula(psmformula),data = x[,c(1:72,73:84,92,94:95,98,100:101)],
-				method= "nearest", discard="both",
-				caliper = .20, distance="logit", 
-				distance.options=list(maxit=100),
-				exact = c("egp", "sex", "state", "indig"))
-		}
-	)
-	#Extract output
-	sfExport("match1")
-	cmatch1 <- sfLapply(match1, function(x){
-		set.seed(100)
-		summary(x, addlvariables=NULL, interactions=TRUE,standardize=TRUE)
-		}
-	)
-	sfStop()
-	#Distance post matching
-	sapply(cmatch1, function(x) head(meandifftable(x)))
-	#cohen's d differences pre-matching
-	sapply(cmatch1, all_meandiffcount)
-	#cohen's d differences post-matching
-	sapply(cmatch1, matched_meandiffcount)	
-	#Extract matched data
-	dmatch <- lapply(match1, match.data)
-	cat("Total sample size: ", mean(sapply(dmatch, nrow)))
-	cat("Group sample size:\n",rowMeans(sapply(dmatch, function(x) table(x$treatment))))
-	#Roll back into an imputation list
-	psmData <- imputationList(dmatch)
-	d98.03 <- svydesign(data = psmData, id = ~sch)
-	
-```
-
-
-PSM age 19: Post-matching
-------------------------
-
-```{r post19, echo=FALSE,warning=FALSE, message=FALSE}
-#Post matching differences
-	summary(MIcombine(with(d98.03, svyglm(scale(general6) ~ treatment + scale(general5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(work6) ~ treatment + scale(work5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(living6) ~ treatment + scale(living5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(money6) ~ treatment + scale(money5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(people6) ~ treatment + scale(people5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(social6) ~ treatment + scale(social5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(home6) ~ treatment + scale(home5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(career6) ~ treatment + scale(career5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(future6) ~ treatment + scale(future5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(independence6) ~ treatment + scale(independence5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(lesiure6) ~ treatment + scale(lesiure5)) ) ))
-	summary(MIcombine(with(d98.03, svyglm(scale(location6) ~ treatment + scale(location5)) ) ))
-```
-
-PSM age 22: Pre-matching
-------------------------
-
-```{r pre22, echo=FALSE,warning=FALSE, message=FALSE}
+```{r pre19, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
 #Load data
 rm(list=ls(all=TRUE))
 library(mitools)
 library(survey)
 library(MatchIt)
 library(snowfall)
+library(knitr)
 #Load data
 load(file="psm03.06.RData")
 source("lib/matchItAddOn.R")#Unmatched
-	summary(MIcombine(with(d03.06, svyglm(scale(general.3) ~ treatment + general.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(work.3) ~ treatment + work.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(living.3) ~ treatment + living.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(money.3) ~ treatment + money.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(people.3) ~ treatment + people.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(social.3) ~ treatment + social.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(home.3) ~ treatment + home.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(career.3) ~ treatment + career.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(future.3) ~ treatment + future.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(independence.3) ~ treatment + independence.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(lesiure.3) ~ treatment + lesiure.2)) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(location.3) ~ treatment + location.2)) ) )
+	
+	cat("<h3>Pre-Match: General</h3>\n")
+	sink("/dev/null");g1 <- summary(MIcombine(with(d03.06, svyglm(scale(general.3) ~ treatment + scale(general.2) ) ) ) ); sink()
+	print(kable(g1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Pre-Match: Work</h3>\n")
+	sink("/dev/null");w1 <- summary(MIcombine(with(d03.06, svyglm(scale(work.3) ~ treatment + scale(work.2) )) ) );sink()
+	print(kable(w1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Pre-Match: General</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d03.06, svyglm(scale(living.3) ~ treatment + scale(living.2) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Money</h3>\n")
+	sink("/dev/null");m1 <- summary(MIcombine(with(d03.06, svyglm(scale(money.3) ~ treatment + scale(money.2) )) ) );sink()
+	print(kable(m1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: People</h3>\n")
+	sink("/dev/null");p1 <- summary(MIcombine(with(d03.06, svyglm(scale(people.3) ~ treatment + scale(people.2) )) ) );sink()
+	print(kable(p1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Social</h3>\n")
+	sink("/dev/null");s1 <- summary(MIcombine(with(d03.06, svyglm(scale(social.3) ~ treatment + scale(social.2) )) ) );sink()
+	print(kable(s1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Home</h3>\n")
+	sink("/dev/null"); h1 <- summary(MIcombine(with(d03.06, svyglm(scale(home.3) ~ treatment + scale(home.2) )) ) );sink()
+	print(kable(h1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Career</h3>\n")
+	sink("/dev/null");c1 <- summary(MIcombine(with(d03.06, svyglm(scale(career.3) ~ treatment + scale(career.2) )) ) );sink()
+	print(kable(c1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Future</h3>\n")
+	sink("/dev/null");f1 <- summary(MIcombine(with(d03.06, svyglm(scale(future.3) ~ treatment + scale(future.2) )) ) );sink()
+	print(kable(f1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Independence</h3>\n")
+	sink("/dev/null");i1 <- summary(MIcombine(with(d03.06, svyglm(scale(independence.3) ~ treatment + scale(independence.2) )) ) );sink()
+	print(kable(i1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Lesiure</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d03.06, svyglm(scale(lesiure.3) ~ treatment + scale(lesiure.2) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Location</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d03.06, svyglm(scale(location.3) ~ treatment + scale(location.2) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
 ```
 
-PSM Age 22: Matching
+PSM Age 19: Matching
 ------------------------
-```{r psm22, echo=FALSE,warning=FALSE, message=FALSE}
+```{r psm19, echo=FALSE,warning=FALSE, message=FALSE}
 #Propensity score matching
 	psmformula <- paste("treatment ~",
 					paste0(names(MIimp$imputations[[1]])[c(1:4,6:9,
@@ -160,37 +122,282 @@ PSM Age 22: Matching
 	)
 	sfStop()
 	#Distance post matching
+	cat("Largest Differences Post Matching\n")
 	sapply(cmatch1, function(x) head(meandifftable(x)))
+	cat("\n")
 	#cohen's d differences pre-matching
+	cat("Pre-matching differences\n")
 	sapply(cmatch1, all_meandiffcount)
+	cat("\n")
 	#cohen's d differences post-matching
-	sapply(cmatch1, matched_meandiffcount)	
+	cat("Post-matching differences\n")
+	sapply(cmatch1, matched_meandiffcount)
+	cat("\n")
 	#Extract matched data
 	dmatch <- lapply(match1, match.data)
-	cat("Total sample size: ", mean(sapply(dmatch, nrow)))
-	cat("Group sample size:\n",rowMeans(sapply(dmatch, function(x) table(x$treatment))))
+	cat("Total sample size: ", mean(sapply(dmatch, nrow)), "\n")
+	cat("Group sample size:\n",rowMeans(sapply(dmatch, function(x) table(x$treatment))), "\n")
 	#Roll back into an imputation list
 	psmData <- imputationList(dmatch)
 	d03.06 <- svydesign(data = psmData, id = ~sch)
 ```
 
+PSM age 19: Post-matching
+------------------------
+
+```{r post19, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+#Post matching differences
+	cat("<h3>Post-Match: General</h3>\n")
+	sink("/dev/null");g1 <- summary(MIcombine(with(d03.06, svyglm(scale(general.3) ~ treatment + scale(general.2) ) ) ) ); sink()
+	print(kable(g1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Post-Match: Work</h3>\n")
+	sink("/dev/null");w1 <- summary(MIcombine(with(d03.06, svyglm(scale(work.3) ~ treatment + scale(work.2) )) ) );sink()
+	print(kable(w1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Post-Match: General</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d03.06, svyglm(scale(living.3) ~ treatment + scale(living.2) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Money</h3>\n")
+	sink("/dev/null");m1 <- summary(MIcombine(with(d03.06, svyglm(scale(money.3) ~ treatment + scale(money.2) )) ) );sink()
+	print(kable(m1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: People</h3>\n")
+	sink("/dev/null");p1 <- summary(MIcombine(with(d03.06, svyglm(scale(people.3) ~ treatment + scale(people.2) )) ) );sink()
+	print(kable(p1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Social</h3>\n")
+	sink("/dev/null");s1 <- summary(MIcombine(with(d03.06, svyglm(scale(social.3) ~ treatment + scale(social.2) )) ) );sink()
+	print(kable(s1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Home</h3>\n")
+	sink("/dev/null"); h1 <- summary(MIcombine(with(d03.06, svyglm(scale(home.3) ~ treatment + scale(home.2) )) ) );sink()
+	print(kable(h1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Career</h3>\n")
+	sink("/dev/null");c1 <- summary(MIcombine(with(d03.06, svyglm(scale(career.3) ~ treatment + scale(career.2) )) ) );sink()
+	print(kable(c1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Future</h3>\n")
+	sink("/dev/null");f1 <- summary(MIcombine(with(d03.06, svyglm(scale(future.3) ~ treatment + scale(future.2) )) ) );sink()
+	print(kable(f1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Independence</h3>\n")
+	sink("/dev/null");i1 <- summary(MIcombine(with(d03.06, svyglm(scale(independence.3) ~ treatment + scale(independence.2) )) ) );sink()
+	print(kable(i1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Lesiure</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d03.06, svyglm(scale(lesiure.3) ~ treatment + scale(lesiure.2) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Location</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d03.06, svyglm(scale(location.3) ~ treatment + scale(location.2) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+```
+
+PSM age 22: Pre-matching
+------------------------
+
+```{r pre22, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+library(mitools)
+library(survey)
+library(MatchIt)
+library(snowfall)
+#Load data
+load(file="psm98.03.RData")
+source("lib/matchItAddOn.R")
+
+#Unmatched
+	cat("<h3>Pre-Match: General</h3>\n")
+	sink("/dev/null");g1 <- summary(MIcombine(with(d98.03, svyglm(scale(general6) ~ treatment + scale(general5) ) ) ) ); sink()
+	print(kable(g1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Pre-Match: Work</h3>\n")
+	sink("/dev/null");w1 <- summary(MIcombine(with(d98.03, svyglm(scale(work6) ~ treatment + scale(work5) )) ) );sink()
+	print(kable(w1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Pre-Match: General</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d98.03, svyglm(scale(living6) ~ treatment + scale(living5) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Money</h3>\n")
+	sink("/dev/null");m1 <- summary(MIcombine(with(d98.03, svyglm(scale(money6) ~ treatment + scale(money5) )) ) );sink()
+	print(kable(m1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: People</h3>\n")
+	sink("/dev/null");p1 <- summary(MIcombine(with(d98.03, svyglm(scale(people6) ~ treatment + scale(people5) )) ) );sink()
+	print(kable(p1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Social</h3>\n")
+	sink("/dev/null");s1 <- summary(MIcombine(with(d98.03, svyglm(scale(social6) ~ treatment + scale(social5) )) ) );sink()
+	print(kable(s1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Home</h3>\n")
+	sink("/dev/null"); h1 <- summary(MIcombine(with(d98.03, svyglm(scale(home6) ~ treatment + scale(home5) )) ) );sink()
+	print(kable(h1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Career</h3>\n")
+	sink("/dev/null");c1 <- summary(MIcombine(with(d98.03, svyglm(scale(career6) ~ treatment + scale(career5) )) ) );sink()
+	print(kable(c1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Future</h3>\n")
+	sink("/dev/null");f1 <- summary(MIcombine(with(d98.03, svyglm(scale(future6) ~ treatment + scale(future5) )) ) );sink()
+	print(kable(f1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Independence</h3>\n")
+	sink("/dev/null");i1 <- summary(MIcombine(with(d98.03, svyglm(scale(independence6) ~ treatment + scale(independence5) )) ) );sink()
+	print(kable(i1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Pre-Match: Lesiure</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d98.03, svyglm(scale(lesiure6) ~ treatment + scale(lesiure5) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Pre-Match: Location</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d98.03, svyglm(scale(location6) ~ treatment + scale(location5) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+```
+
+PSM Age 22: Matching
+------------------------
+```{r psm22, echo=FALSE,warning=FALSE, message=FALSE}
+#Propensity score matching
+	psmformula <- paste("treatment~",
+		paste0(names(MIimp$imputations[[1]])[c(1:72, 94:95,98,100)],
+			   collapse = "+") )
+	data <- MIimp$imputations
+	#Set up parallel settings
+	sfInit(parallel=TRUE, cpus=5)
+	sfLibrary(MatchIt)
+	#export any object you want each of the clusters to have access to
+	sfExport("data"); sfExport("psmformula")
+	#Run multilevel models
+	match1 <- sfLapply(data, function(x){
+		set.seed(100)
+		matchit(as.formula(psmformula),data = x[,c(1:72,73:84,92,94:95,98,100:101)],
+				method= "nearest", discard="both",
+				caliper = .20, distance="logit", 
+				distance.options=list(maxit=100),
+				exact = c("egp", "sex", "state", "indig"))
+		}
+	)
+	#Extract output
+	sfExport("match1")
+	cmatch1 <- sfLapply(match1, function(x){
+		set.seed(100)
+		summary(x, addlvariables=NULL, interactions=TRUE,standardize=TRUE)
+		}
+	)
+	sfStop()
+	#Distance post matching
+	cat("Largest Differences Post Matching\n")
+	sapply(cmatch1, function(x) head(meandifftable(x)))
+	cat("\n")
+	#cohen's d differences pre-matching
+	cat("Pre-matching differences\n")
+	sapply(cmatch1, all_meandiffcount)
+	cat("\n")
+	#cohen's d differences post-matching
+	cat("Post-matching differences\n")
+	sapply(cmatch1, matched_meandiffcount)
+	cat("\n")
+	#Extract matched data
+	dmatch <- lapply(match1, match.data)
+	cat("Total sample size: ", mean(sapply(dmatch, nrow)), "\n")
+	cat("Group sample size:\n",rowMeans(sapply(dmatch, function(x) table(x$treatment))), "\n")
+	#Roll back into an imputation list
+	psmData <- imputationList(dmatch)
+	d98.03 <- svydesign(data = psmData, id = ~sch)
+	
+```
 
 PSM age 22: Post-matching
 ------------------------
 
-```{r post22, echo=FALSE,warning=FALSE, message=FALSE}
+```{r post22, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
 #Post matching differences
-	summary(MIcombine(with(d03.06, svyglm(scale(general.3) ~ treatment + scale(general.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(work.3) ~ treatment + scale(work.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(living.3) ~ treatment + scale(living.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(money.3) ~ treatment + scale(money.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(people.3) ~ treatment + scale(people.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(social.3) ~ treatment + scale(social.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(home.3) ~ treatment + scale(home.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(career.3) ~ treatment + scale(career.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(future.3) ~ treatment + scale(future.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(independence.3) ~ treatment + scale(independence.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(lesiure.3) ~ treatment + scale(lesiure.2)) ) ) )
-	summary(MIcombine(with(d03.06, svyglm(scale(location.3) ~ treatment + scale(location.2)) ) ) )
+	cat("<h3>Post-Match: General</h3>\n")
+	sink("/dev/null");g1 <- summary(MIcombine(with(d98.03, svyglm(scale(general6) ~ treatment + scale(general5) ) ) ) ); sink()
+	print(kable(g1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Post-Match: Work</h3>\n")
+	sink("/dev/null");w1 <- summary(MIcombine(with(d98.03, svyglm(scale(work6) ~ treatment + scale(work5) )) ) );sink()
+	print(kable(w1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	
+	cat("<h3>Post-Match: General</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d98.03, svyglm(scale(living6) ~ treatment + scale(living5) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Money</h3>\n")
+	sink("/dev/null");m1 <- summary(MIcombine(with(d98.03, svyglm(scale(money6) ~ treatment + scale(money5) )) ) );sink()
+	print(kable(m1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: People</h3>\n")
+	sink("/dev/null");p1 <- summary(MIcombine(with(d98.03, svyglm(scale(people6) ~ treatment + scale(people5) )) ) );sink()
+	print(kable(p1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Social</h3>\n")
+	sink("/dev/null");s1 <- summary(MIcombine(with(d98.03, svyglm(scale(social6) ~ treatment + scale(social5) )) ) );sink()
+	print(kable(s1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Home</h3>\n")
+	sink("/dev/null"); h1 <- summary(MIcombine(with(d98.03, svyglm(scale(home6) ~ treatment + scale(home5) )) ) );sink()
+	print(kable(h1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Career</h3>\n")
+	sink("/dev/null");c1 <- summary(MIcombine(with(d98.03, svyglm(scale(career6) ~ treatment + scale(career5) )) ) );sink()
+	print(kable(c1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Future</h3>\n")
+	sink("/dev/null");f1 <- summary(MIcombine(with(d98.03, svyglm(scale(future6) ~ treatment + scale(future5) )) ) );sink()
+	print(kable(f1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Independence</h3>\n")
+	sink("/dev/null");i1 <- summary(MIcombine(with(d98.03, svyglm(scale(independence6) ~ treatment + scale(independence5) )) ) );sink()
+	print(kable(i1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+
+	cat("<h3>Post-Match: Lesiure</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d98.03, svyglm(scale(lesiure6) ~ treatment + scale(lesiure5) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")	
+	
+	cat("<h3>Post-Match: Location</h3>\n")
+	sink("/dev/null");l1 <- summary(MIcombine(with(d98.03, svyglm(scale(location6) ~ treatment + scale(location5) )) ) );sink()
+	print(kable(l1, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
 ```
 

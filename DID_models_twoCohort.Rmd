@@ -1,0 +1,145 @@
+---
+title: "Effect of the GFC: Basic DID Approach"
+author: "Blinded For Review"
+date: "10 March 2015"
+output:
+  html_document:
+    toc: true
+    theme: journal
+    number_sections: true
+  md_document:
+    toc: true 
+---
+
+```{r loadLong, echo=FALSE,warning=FALSE, message=FALSE}
+load("combinedData.RData")
+library(knitr)
+library(survey)
+library(mitools)
+```
+
+DID age 19: No trend
+------------------------
+
+```{r comp1_notrend, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+domains <- c("general", "work","living","money",
+			 "people", "social", "home",
+			 "career", "future","independence",
+			 "lesiure","location")
+
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~ 
+								relevel(factor(cohort), ref='y03')*post06" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset =  trend < 5 & cohort == 'y03' |
+								trend < 5 & cohort == 'y06') 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	cat("\n")
+	paper[[i]] <- cbind(out[6,c(1,3:4)],out[7,c(1,3:4)],out[8,c(1,3:4)])
+} 
+
+```
+
+DID age 22: No trend
+------------------------
+```{r com2_noTrend, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~
+								relevel(factor(cohort), ref='y98')*post03" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend < 8 & cohort == 'y98' | 
+								trend < 8 & cohort == 'y03') 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[6,c(1,3:4)],out[7,c(1,3:4)],out[8,c(1,3:4)])
+} 
+
+```
+
+
+DID age 19: With trend
+------------------------
+
+```{r comp1, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+domains <- c("general", "work","living","money",
+			 "people", "social", "home",
+			 "career", "future","independence",
+			 "lesiure","location")
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~ 
+								relevel(factor(cohort), ref='y03') +
+								post06 + trend + 
+								relevel(factor(cohort), ref='y03'):post06 +
+								relevel(factor(cohort), ref='y03'):trend" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend < 5 & cohort == 'y03' |
+								trend < 5 & cohort == 'y06') 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[7,c(1,3:4)],out[8,c(1,3:4)],out[9,c(1,3:4)])
+} 
+
+```
+
+DID age 22: With trend
+------------------------
+```{r com2, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~
+								relevel(factor(cohort), ref='y98') + 
+								post03 + trend + 
+								relevel(factor(cohort), ref='y98'):post03 +
+								relevel(factor(cohort), ref='y98'):trend" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend < 8 & cohort == 'y98' |
+								trend < 8 & cohort == 'y03') 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[7,c(1,3:4)],out[8,c(1,3:4)],out[9,c(1,3:4)])
+} 
+
+```
+
+DID age 22: With trend and Without Outlier Wave 1
+------------------------
+```{r com3, echo=FALSE,warning=FALSE, message=FALSE, results='asis'}
+## Models for general list satisfaction
+paper <- list()
+for (i in seq_along(domains) ){
+	formula <- as.formula(paste("scale(",domains[i], ") ~
+								relevel(factor(cohort), ref='y98') + 
+								post03 + trend + 
+								relevel(factor(cohort), ref='y98'):post03 +
+								relevel(factor(cohort), ref='y98'):trend" ) )
+	mod <- MIcombine(with(dclust, svyglm(formula, 
+							subset = trend >1 & trend < 8 & cohort == 'y98' |
+								trend >1 & trend < 8 & cohort == 'y03') 
+							)
+					 )
+	cat("<h3>", domains[i], "</h3>\n")
+	sink("/dev/null"); out <- summary(mod); sink()
+	print(kable(out, digits = 3,format = "markdown",padding=2) )
+	paper[[i]] <- cbind(out[7,c(1,3:4)],out[8,c(1,3:4)],out[9,c(1,3:4)])
+} 
+```
